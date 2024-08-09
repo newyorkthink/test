@@ -20,7 +20,7 @@ squashfs_compressor_arguments=(-b 1M -comp ${squashfs_compressor} -Xcompression-
 #squashfs_compressor_arguments=(-b 256K -comp "${squashfs_compressor}" -Xhc)
 
 # Use DwarFS instead of SquashFS
-dwarfs="false"
+dwarfs="true"
 dwarfs_compressor_arguments=(-l7 -C zstd:level=19 --metadata-compression null \
                             -S 21 -B 1 --order nilsimsa \
                             -W 12 -w 4 --no-create-timestamp)
@@ -61,14 +61,13 @@ else
 fi
 
 if [ ! -f "${utils}" ] || [ "$(wc -c < "${utils}")" -lt 100000 ]; then
- 	if git config --get remote.origin.url; then
+ 		if git config --get remote.origin.url; then
 		utils_url="$(git config --get remote.origin.url)"/raw/"$(git rev-parse --abbrev-ref HEAD)"/${utils}
-	else
-		utils_url="https://github.com/Kron4ek/Conty/raw/master/${utils}"
-   	fi
-
+      		else
+			utils_url="https://github.com/Kron4ek/Conty/raw/master/${utils}"
+   		fi
 	rm -f "${utils}"
-	curl -#LO "${utils_url}"
+	curl -#LO "https://github.com/Kron4ek/Conty/raw/master/${utils}"
 fi
 
 if [ ! -f conty-start.sh ]; then
