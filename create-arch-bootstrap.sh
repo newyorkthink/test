@@ -1,54 +1,27 @@
 #!/usr/bin/env bash
 
+# note: need im-ibus.so and libpixbufloader* file copy to the /usr/lib/
+# when the build is successful, don't forget test any commands that were installed.
+# cp ./root.x86_64/usr/lib/gtk-3.0/3.0.0/immodules/im-ibus.so ./root.x86_64/usr/lib
+# cp ./root.x86_64/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-* ./root.x86_64/usr/lib
+
+# note: Forbidden is fine, but note the download package , sometime have loss some packages
+
 # Dependencies: curl tar gzip grep coreutils
 # Root rights are required
 
 ########################################################################
 
 # Package groups
-audio_pkgs="alsa-lib lib32-alsa-lib alsa-plugins lib32-alsa-plugins libpulse \
-	lib32-libpulse jack2 lib32-jack2 alsa-tools alsa-utils pipewire lib32-pipewire"
-
-video_pkgs="mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon \
-	vulkan-intel lib32-vulkan-intel \
-	vulkan-icd-loader lib32-vulkan-icd-loader vulkan-mesa-layers \
-	lib32-vulkan-mesa-layers libva-mesa-driver lib32-libva-mesa-driver \
-	libva-intel-driver lib32-libva-intel-driver intel-media-driver \
-	mesa-utils vulkan-tools libva-utils lib32-mesa-utils"
-
-wine_pkgs="wine-staging winetricks-git wine-nine wineasio \
-	giflib lib32-giflib libpng lib32-libpng libldap lib32-libldap \
-	gnutls lib32-gnutls mpg123 lib32-mpg123 openal lib32-openal \
-	v4l-utils lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
-	lib32-alsa-plugins alsa-lib lib32-alsa-lib libjpeg-turbo \
-	lib32-libjpeg-turbo libxcomposite lib32-libxcomposite libxinerama \
-	lib32-libxinerama libxslt lib32-libxslt libva lib32-libva gtk3 \
-	lib32-gtk3 vulkan-icd-loader lib32-vulkan-icd-loader sdl2 lib32-sdl2 \
-	vkd3d lib32-vkd3d libgphoto2 ffmpeg gst-plugins-good gst-plugins-bad \
-	gst-plugins-ugly gst-plugins-base lib32-gst-plugins-good \
-	lib32-gst-plugins-base gst-libav wget gst-plugin-pipewire"
-
-devel_pkgs="base-devel git meson mingw-w64-gcc cmake"
 
 # Packages to install
 # You can add packages that you want and remove packages that you don't need
 # Apart from packages from the official Arch repos, you can also specify
 # packages from the Chaotic-AUR repo
-export packagelist="${audio_pkgs} ${video_pkgs} ${wine_pkgs} ${devel_pkgs} \
-	nano ttf-dejavu ttf-liberation lutris steam firefox mpv geany pcmanfm \
-	htop qbittorrent speedcrunch gpicview file-roller xorg-xwayland \
-	steam-native-runtime gamemode lib32-gamemode jre17-openjdk lxterminal \
-	steamtinkerlaunch mangohud lib32-mangohud qt6-wayland wayland \
-	lib32-wayland qt5-wayland retroarch xorg-server-xephyr openbox \
-	obs-studio gamehub minigalaxy legendary gamescope prismlauncher yt-dlp \
-	bottles playonlinux minizip retroarch-assets-ozone libretro-beetle-psx-hw \
-	libretro-blastem libretro-bsnes libretro-dolphin libretro-duckstation \
-	libretro-gambatte libretro-melonds libretro-mgba libretro-nestopia \
-	libretro-parallel-n64 libretro-pcsx2 libretro-picodrive libretro-ppsspp \
-	libretro-retrodream libretro-yabause sunshine"
+export packagelist="openal which ttf-dejavu ttf-liberation xorg-xwayland wayland xorg-server v4l-utils ibus yay"
 
 # If you want to install AUR packages, specify them in this variable
-export aur_packagelist=""
+export aur_packagelist="com.qq.weixin.work.deepin-x11"
 
 # ALHP is a repository containing packages from the official Arch Linux
 # repos recompiled with -O3, LTO and optimizations for modern CPUs for
@@ -210,7 +183,7 @@ EOF
 
 generate_mirrorlist () {
 	cat <<EOF > mirrorlist
-Server = https://mirror1.sl-chat.ru/archlinux/\$repo/os/\$arch
+Server = https://mirror2.sl-chat.ru/archlinux/\$repo/os/\$arch
 Server = https://mirror3.sl-chat.ru/archlinux/\$repo/os/\$arch
 Server = https://us.mirrors.cicku.me/archlinux/\$repo/os/\$arch
 Server = https://mirror.osbeck.com/archlinux/\$repo/os/\$arch
@@ -379,6 +352,13 @@ run_in_chroot locale-gen
 # Generate a list of installed packages
 run_in_chroot pacman -Q > "${bootstrap}"/pkglist.x86_64.txt
 
+###################################################
+# Try to fix GTK/GDK error messages
+# code for Ivan write
+cp "${bootstrap}"/usr/lib/gtk-3.0/3.0.0/immodules/im-ibus.so "${bootstrap}"/usr/lib/
+cp "${bootstrap}"/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-* "${bootstrap}"/usr/lib/
+###################################################
+
 unmount_chroot
 
 # Clear pacman package cache
@@ -397,7 +377,7 @@ chmod 755 "${bootstrap}"/root
 rm -f "${bootstrap}"/etc/fonts/conf.d/10-hinting-slight.conf
 ln -s /usr/share/fontconfig/conf.avail/10-hinting-full.conf "${bootstrap}"/etc/fonts/conf.d
 
-clear
+# clear
 echo "Done"
 
 if [ -f "${bootstrap}"/opt/bad_pkglist.txt ]; then
